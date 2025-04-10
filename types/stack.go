@@ -76,7 +76,7 @@ func (stack *Stack) Swap(n int) error {
 
 // Dup duplicates the n-th element from the top of the stack
 func (stack *Stack) Dup(n int) error {
-	if len(stack.elem) < 1 {
+	if len(stack.elem) < n {
 		return ErrStackUnderflow
 	}
 	stack.elem = append(stack.elem, stack.elem[len(stack.elem)-n])
