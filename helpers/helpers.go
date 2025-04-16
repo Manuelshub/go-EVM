@@ -1,8 +1,10 @@
 package helpers
 
 import (
+	"bufio"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Manuelshub/go-EVM/evm"
@@ -80,4 +82,66 @@ func PushValue(ctx *evm.ExecutionContext, hexValue string) {
 
 	fmt.Printf("Pushed 0x%s to stack\n", hexValue)
 	fmt.Printf("Stack: %s\n", ctx.Stack.ToString())
+}
+
+func DebugBytecode(ctx *evm.ExecutionContext, hexString string) {
+	// Remove 0x prefix from string if present
+	if strings.HasPrefix(hexString, "0x") {
+		hexString = hexString[2:]
+	}
+
+	// Decode the hex string into bytes
+	bytecode, err := hex.DecodeString(hexString)
+	if err != nil {
+		fmt.Printf("Error decoding bytecode: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Debugging bytecode: 0x%s\n", hexString)
+
+	// Setup the context
+	ctx.ByteCode = bytecode
+	ctx.ProgramCounter = 0
+	ctx.Stopped = false
+
+	// Step through each instruction
+	step := 1
+	reader := bufio.NewReader(os.Stdin)
+
+	for !ctx.Stopped && ctx.ProgramCounter < uint64(len(ctx.ByteCode)) {
+		// Get the current opcode
+		op := evm.GetOpcodeName(ctx.ByteCode[ctx.ProgramCounter])
+
+		fmt.Printf("\nStep %d: PC=%d, Opcode=%s\n", step, ctx.ProgramCounter, op)
+		fmt.Printf("Stack: %s\n", ctx.Stack.ToString())
+
+		fmt.Printf("Press Enter to continue... (or 'q' to quit): ")
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+
+		if input == "q" {
+			fmt.Println("Debugging stopped")
+			break
+		}
+
+		// Execute one instruction
+		err := evm.ExecuteStep(ctx)
+		if err != nil {
+			fmt.Printf("Execution failed: %v\n", err)
+			break
+		}
+
+		step++
+	}
+
+	if ctx.Stopped {
+		fmt.Println("\nExecution stopped. Reason: STOP or RETURN")
+	}
+
+	if ctx.ReturnData != nil && len(ctx.ReturnData) > 0 {
+		fmt.Printf("Return data: 0x%s\n", hex.EncodeToString(ctx.ReturnData))
+	}
+
+	fmt.Printf("Final stack: %s\n", ctx.Stack.ToString())
+	fmt.Printf("Gas used: %d\n", ctx.GasMeter.GasConsumed())
 }
