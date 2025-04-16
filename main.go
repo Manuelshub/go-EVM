@@ -54,6 +54,13 @@ func main() {
 			}
 			h.PushValue(executionContext, parts[1])
 
+		case "debug":
+			if len(parts) < 2 {
+				fmt.Println("Error: Missing value. Usage: debug <bytecode>")
+				continue
+			}
+			h.DebugBytecode(executionContext, parts[1])
+
 		case "reset":
 			executionContext = evm.NewExecutionContext()
 			fmt.Println("Execution context reset")
