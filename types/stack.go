@@ -18,28 +18,15 @@ type Stack struct {
 	elem []*uint256.Int // A list of 32 bytes elements
 }
 
-// var stack = Stack{
-// 	elem: make([][32]byte, MAX_STACK_SIZE),
-// }
-
 func NewStack() *Stack {
 	return &Stack{
 		elem: make([]*uint256.Int, 0, MAX_STACK_SIZE), // Initialize the stack with a capacity of MAX_STACK_SIZE
 	}
 }
 
-// // ToBigInt returns the n-th element of the stack as a big.Int
-// func (stack *Stack) ToBigInt(n int) *big.Int {
-// 	if len(stack.elem) == 0 {
-// 		fmt.Fprintln(os.Stderr, ErrStackUnderflow.Error())
-// 		return nil
-// 	}
-// 	return new(big.Int).SetBytes(stack.elem[len(stack.elem)-n])
-// }
-
 // Push adds a new element to the stack
 func (stack *Stack) Push(value *uint256.Int) error {
-	if len(stack.elem) >= MAX_STACK_SIZE {
+	if stack.Size() >= MAX_STACK_SIZE {
 		return ErrStackOverflow
 	}
 	stack.elem = append(stack.elem, value)
@@ -48,38 +35,38 @@ func (stack *Stack) Push(value *uint256.Int) error {
 
 // Pop removes the last element from the stack
 func (stack *Stack) Pop() (*uint256.Int, error) {
-	if len(stack.elem) == 0 {
+	if stack.Size() == 0 {
 		return nil, ErrStackUnderflow
 	}
-	value := stack.elem[len(stack.elem)-1]
-	stack.elem = stack.elem[:len(stack.elem)-1]
+	value := stack.elem[stack.Size()-1]
+	stack.elem = stack.elem[:stack.Size()-1]
 	return value, nil
 }
 
 // Peek returns the last element from the stack without removing it
 func (stack *Stack) Peek() (*uint256.Int, error) {
-	if len(stack.elem) == 0 {
+	if stack.Size() == 0 {
 		return nil, ErrStackUnderflow
 	}
-	return stack.elem[len(stack.elem)-1], nil
+	return stack.elem[stack.Size()-1], nil
 
 }
 
 // Swap swaps the n-th element from the top of the stack with the top element
 func (stack *Stack) Swap(n int) error {
-	if len(stack.elem) < 2 {
+	if stack.Size() < 2 {
 		return ErrStackUnderflow
 	}
-	stack.elem[len(stack.elem)-1], stack.elem[len(stack.elem)-1-n] = stack.elem[len(stack.elem)-1-n], stack.elem[len(stack.elem)-1]
+	stack.elem[stack.Size()-1], stack.elem[stack.Size()-1-n] = stack.elem[stack.Size()-1-n], stack.elem[stack.Size()-1]
 	return nil
 }
 
 // Dup duplicates the n-th element from the top of the stack
 func (stack *Stack) Dup(n int) error {
-	if len(stack.elem) < n {
+	if stack.Size() < n {
 		return ErrStackUnderflow
 	}
-	stack.elem = append(stack.elem, stack.elem[len(stack.elem)-n])
+	stack.elem = append(stack.elem, stack.elem[stack.Size()-n])
 	return nil
 }
 
@@ -87,7 +74,7 @@ func (stack *Stack) Dup(n int) error {
 func (stack *Stack) ToString() string {
 	var s string
 
-	if len(stack.elem) == 0 {
+	if stack.Size() == 0 {
 		s = "[]"
 		return s
 	}
@@ -100,4 +87,18 @@ func (stack *Stack) ToString() string {
 	}
 	s += "]"
 	return s
+}
+
+// GetItem returns the n-th item from the top of the stack without removing it
+// n=0 is the top item, n=1 is the second item, etc.
+func (stack *Stack) GetItem(n int) (*uint256.Int, error) {
+	if stack.Size() <= n {
+		return nil, ErrStackUnderflow
+	}
+	return stack.elem[stack.Size()-1-n], nil
+}
+
+// Size returns the current number of elements in the stack
+func (stack *Stack) Size() int {
+	return len(stack.elem)
 }
