@@ -47,6 +47,7 @@ func RunBytecode(ctx *evm.ExecutionContext, hexString string) {
 	}
 
 	fmt.Printf("Stack: %s\n", ctx.Stack.ToString())
+	fmt.Printf("Memory: %s\n", ctx.Memory.ToString())
 	if ctx.GasMeter != nil {
 		fmt.Printf("Gas used: %d\n", ctx.GasMeter.GasConsumed())
 	}
@@ -114,6 +115,7 @@ func DebugBytecode(ctx *evm.ExecutionContext, hexString string) {
 
 		fmt.Printf("\nStep %d: PC=%d, Opcode=%s\n", step, ctx.ProgramCounter, op)
 		fmt.Printf("Stack: %s\n", ctx.Stack.ToString())
+		fmt.Printf("Memory: %s\n", ctx.Memory.ToString())
 
 		fmt.Printf("Press Enter to continue... (or 'q' to quit): ")
 		input, _ := reader.ReadString('\n')
@@ -138,10 +140,11 @@ func DebugBytecode(ctx *evm.ExecutionContext, hexString string) {
 		fmt.Println("\nExecution stopped. Reason: STOP or RETURN")
 	}
 
-	if ctx.ReturnData != nil && len(ctx.ReturnData) > 0 {
-		fmt.Printf("Return data: 0x%s\n", hex.EncodeToString(ctx.ReturnData))
+	if len(ctx.ReturnData) > 0 {
+		fmt.Printf("\nReturn data: 0x%s\n", hex.EncodeToString(ctx.ReturnData))
 	}
 
-	fmt.Printf("Final stack: %s\n", ctx.Stack.ToString())
-	fmt.Printf("Gas used: %d\n", ctx.GasMeter.GasConsumed())
+	fmt.Printf("\nFinal stack: %s\n", ctx.Stack.ToString())
+	fmt.Printf("\nFinal memory: %s\n", ctx.Memory.ToString())
+	fmt.Printf("\nGas used: %d\n", ctx.GasMeter.GasConsumed())
 }
